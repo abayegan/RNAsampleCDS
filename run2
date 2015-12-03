@@ -1,0 +1,12 @@
+#!/bin/sh 
+#PBS -o qsublog
+#PBS -e qsuberr
+#PBS -q stage
+#PBS -l walltime=2400:00:00
+#PBS -m ea
+#PBS -M bayegan@bc.edu
+cd $PBS_O_WORKDIR
+./sampleRNAsWithSequenceConstraintsWithOverlappingReadingFrames.py FFREDLAFLQGKAREFS FLGKIWPSYKGRPGNFL -c UUUUUUA -m blosum62.txt -t 0 -n 100000 > ../output/HIV-B0-CDS.seq
+./sampleRNAsWithSequenceConstraintsWithOverlappingReadingFrames.py FFREDLAFLQGKAREFS FLGKIWPSYKGRPGNFL -c UUUUUUA -m blosum62.txt -t 1 -n 100000 > ../output/HIV-B1-CDS.seq
+./sampleRNAsWithSequenceConstraintsWithOverlappingReadingFrames.py FFREDLAFPQGKAREFS FLGKIWPSHKGRPGNFL -c UUUUUUA -m blosum62.txt -t 0 -n 100000 > ../output/Ofori-B0-CDS.seq
+./sampleRNAsWithSequenceConstraintsWithOverlappingReadingFrames.py FFREDLAFPQGKAREFS FLGKIWPSHKGRPGNFL -c UUUUUUA -m blosum62.txt -t 1 -n 100000 > ../output/Ofori-B1-CDS.seq

@@ -1,0 +1,12 @@
+#driver.py RF00480_PolGag_17mersOnly.txt
+#driver_RNAshapesRunOnEachSingleRna.py oo
+#driver.py genBankHIVpolGagSeqAndPeptides.faa  > outProbStemLoopForCodingSeqBis.txt
+#driver.py genBankHIVpolGagSeqAndPeptides.faa  
+
+#rnaSeqBlosumCompatibleWithOverlappingReadingFrames.py FFREDLAFLQGKAREFSSEQTRANSPTRRELQVWGRDNNSPSEAGADRQGTVSFNFPQVTLWQRPLVTI	FLGKIWPSYKGRPGNFLQSRPEPTAPPEESFRSGVETTTPPQKQEPIDKELYPLTSLRSLFGNDPSSQ	> out256seqCodingExactPeptidesInGagPolOverlap.txt
+
+#sampleRNAsWithSequenceConstraintsWithOverlappingReadingFrames.py FFREDLAFLQGKAREFS FLGKIWPSYKGRPGNFL -c UUUUUUA -m blosum62.txt -t 1 -n 10000 > out10000RNAsampleCDSblosum1fromGenbank.txt
+
+#sampleRNAsWithSequenceConstraintsWithOverlappingReadingFrames.py AAAAAAAAAAAAAAAAA AAAAAAAAAAAAAAAAA -c UUUUUUA -m blosum62.txt -t -100 -n 1
+
+sampleRNAsWithSequenceConstraintsWithOverlappingReadingFrames.py FFREDLAFLQGKAREFS FLGKIWPSYKGRPGNFL -c UUUUUUA -m blosum62.txt -t 0 -n 1
