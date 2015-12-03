@@ -259,20 +259,7 @@ def computeZF(peptide1,peptide2,D,constraint=None):
 		for k in range(1,n+1): #k in [1,...,n] 
 			dimer            = p[k-1]+q[k-1]
 			L0               = D[dimer]
-			if len(constraint)<=3*(k-1):
-				constraint4tuple = ''
-			else:
-				constraint4tuple = constraint[3*(k-1):3*k+1]
-			L                = []
-			for tuple in L0:
-				ok = 1
-				for i in range(len(constraint4tuple)):
-					ch = constraint4tuple[i]
-					if ch!='N' and tuple[i]!=ch:
-						ok = 0
-						#break
-				if ok: 
-					L.append(tuple)
+			end(tuple)
 			if DEBUG:
 				print "computeZF ",k,L
 			for s in L:
@@ -300,6 +287,7 @@ def computeZF_GC(peptide1,peptide2,D,constraint=None):
 	#WARNING: Current code assumes len(peptide1) = len(peptide2) 
 	#         Future extension can easily remove this assumption
 	#
+	DEBUG=1
 	p = peptide1; q = peptide2
 	assert (len(p) <= len(q)) 
 	n  = min(len(p),len(q)) 
@@ -311,26 +299,33 @@ def computeZF_GC(peptide1,peptide2,D,constraint=None):
 			#ZF1[(k,ch)]=0.0
 			for x in range(0,3*k+6): #Warning: 3k+2 doesn't work.
 				ZF[(k,x,ch)] = 0.0
+	ZF[(0,1,'C')]=1.0
+	ZF[(0,1,'G')]=1.0
 	if constraint==None or constraint[0]=='N':
 			dimer = p[0]+q[0]
 			L     = D[dimer]
-			#~ print "tuples at level 1:", L
 			for s in L:
 				ZF[(1,GCcont(s),s[-1])] += 1.0
 				#ZF1[(1,s[-1])] +=1.0
-			if(DEBUG):
+			if(DEBUG==1):
+				print "tuples at level 1:", L
 				for a in NUCL:
 					for x in range(0,5):
 						print 'ZF[1,%d,%s]:%d' % (x,a,ZF[(1,x,a)])
-	else: #first position is constrained     
+	else: #first position is constrained
+		dimer = p[0]+q[0]
+		L     = D[dimer]
+		for s in L:
+				ZF[(1,GCcont(s),s[-1])] += 1.0    
 		ch = constraint[0]
-		ZF[(0,ch)] = 1.0
+		if(ch=='C' or ch=='G'):
+		ZF[(0,1,ch)] = 1.0
 	#------------Fill matrix ZF-------------------
 	if constraint==None:
 		for k in range(2,n+1):
 			dimer = p[k-1]+q[k-1]
 			L     = D[dimer]
-			if(DEBUG):
+			if(DEBUG==1):
 				print "tuples at level %d:" %k , L
 			for s in L:
 				#ZF1[(k,s[-1])]+=ZF1[(k-1,s[0])]
@@ -338,7 +333,7 @@ def computeZF_GC(peptide1,peptide2,D,constraint=None):
 					#print s,x,GCcont(s[1:4])
 					if(x-GCcont(s[1:])>=0):
 						ZF[(k,x,s[-1])] += ZF[(k-1,x-GCcont(s[1:]),s[0])]
-			if(DEBUG):
+			if(DEBUG==1):
 				for a in NUCL:
 					for x in range(0,3*k+2):
 						print 'ZF[%d,%d,%s]:%d' % (k,x,a,ZF[(k,x,a)])
@@ -364,13 +359,19 @@ def computeZF_GC(peptide1,peptide2,D,constraint=None):
 						#break
 				if ok: 
 					L.append(tuple)
-			if DEBUG:
-				print "computeZF ",k,L
 			for s in L:
-				ZF[(k,s[-1])] += ZF[(k-1,s[0])]
-	#~ print "CG-ZF"
-	#~ for k in sorted(ZF):
-		#~ print k,ZF[k]
+				#ZF1[(k,s[-1])]+=ZF1[(k-1,s[0])]
+				for x in range(0,3*k+2):
+					#print s,x,GCcont(s[1:4])
+					if(x-GCcont(s[1:])>=0):
+						ZF[(k,x,s[-1])] += ZF[(k-1,x-GCcont(s[1:]),s[0])]
+			if(DEBUG==1):
+				for a in NUCL:
+					for x in range(0,3*k+2):
+						print 'ZF[%d,%d,%s]:%d' % (k,x,a,ZF[(k,x,a)])
+	print "CG-ZF"
+	for k in sorted(ZF):
+		print k,ZF[k]
 	return ZF
 
 def printRNA(RNA):
@@ -502,8 +503,9 @@ def sample_GC(peptide1,peptide2,seqLen,numSamples,GC,D,constraint,weighted):
 				possible =1
 				break
 		if(possible==-1):
-			print "no more sequences with GC-content %d found!" %gc
+			print "no sequence with GC-content %d found!" %gc
 			return SAMPLES
+		print gc,ZF[k,gc,ch4]
 		#gc -= GCcont(ch4)
 		#--------construct sample
 		while k>0:
@@ -542,14 +544,17 @@ def sample_GC(peptide1,peptide2,seqLen,numSamples,GC,D,constraint,weighted):
 			for tuple in Tuples:
 				tupleGC = GCcont(tuple[1:])
 				if((gc-tupleGC)>=0):
-					if(ZF[k-1,gc-tupleGC,tuple[0]]!=0):
-						break
-			gc -= GCcont(tuple[1:])
+					print "**",tuple,tupleGC,ZF[k-1,gc-tupleGC,tuple[0]]
+					if k>1:
+						if(ZF[k-1,gc-tupleGC,tuple[0]]!=0):
+							break
+					else:
+						if(GCcont(tuple)==gc):
+							break
+			gc -= tupleGC
 			print (k-1),tuple,tuple[0],"+++"
 			#ZF[(k,tuple[3])] -= 1.0
-			print "-1:",k,tuple[3]
 			rna = tuple[1]+tuple[2]+tuple[3]+rna
-			print rna
 			ch4  = tuple[0] #set ch for next round
 			k   = k-1
 		rna = ch4+rna #append the first character, which remains to be appended
