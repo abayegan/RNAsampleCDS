@@ -1,0 +1,79 @@
+﻿Clotelab - Boston College
+
+/********************************************************************************
+Given at most six peptides of length n in reading frames 0,1,2 in sense and anti sense strands, RNAsampleCDS samples RNA sequences of size 3*n+2 that translate 
+into the peptides in all of the corresponding reading frames.
+
+Goal of this program is to determine, in conjunction with RNAiFold, the extent
+to which evolutionary pressure constrains the amino acids translated versus
+the RNA secondary structure -- in HIV-1 there is a stem-loop programmed
+-1 ribosomal frameshift signal' at the gag/pol framshift site, where pol
+starts at position 1631 in GenBank AF033819.3. See also Figure 1 of
+		Ofori, L.O., Hilimire, T.A., Bennett, R.P. et al.
+		J. Med. Chem. 57(3), 723--732, February 2014"""
+/********************************************************************************
+
+This program is able to:
+
+1- Compute the number of sequences that code exact or Blosum-similar peptides in the given reading frames.  
+
+2- Sample RNAs from the pool of all possible sequences with or without considering GC-content.
+
+3 - Create the exact PSSM profile of all the RNA sequences.
+
+4- Sample RNA sequences whose nucleotide frequencies are more representative of the total sequences(weighted sampling).
+
+5- Generate all of the possible solutions using BFS method. This method is practical just when the total number RNAs is reletively small. The runtime of BFS is exponential.
+
+6- All the computations are possible considering only RNAs which are compatible with the given nucleotide constraints. 
+
+7- All the computations are possible considering only RNAs with a specified GC-content range.
+
+8- Compute the codon preference index as defined in the article.
+
+/*********************************************************************************
+
+Running the program:
+
+Executables:
+	RNAsampleCDS.py 
+	CodonIndex.py 
+
+Usage:
+	
+	./RNAsampleCDS.py -p peptideFile -n numSamples -c constraintFile -m BlosumMatrix -t threshold -gc GC_content -w -pssm pssmOutFile -v
+
+Options:
+	
+	-p 
+	
+	Define the file name containing the peptides to be coded by the output RNA sequence. 	
+	The input file must have at least 1 and at most 6 lines corresponding to 6 reading frames. Each line should start by '+' or '-' characters indicating direction of translation followed by the open reading frame. Therefore, all the lines of the input peptide file must start with +0,+1,+2,-0,-1, or -2. This is followed by a tab or space and then the coding peptide in the reading frame. It is NOT required to specify all 6 reading frames but the reference reading frame '+0' must be specified. However, all the peptides are required to have the same length. To see how reading frames are defined please refer to figure 1 of the article.
+	The given peptides must follow amino acid IUPAC codes. In addition to IUPAC codes it is possible to completely neutralize the coding requirement for codons by using letter 'O' in each position. In other words, using 'O' in the peptides means that corresponding codons may either code for an amino acid or a stop codon while IUPAC code 'X' guarantees no stop codons are allowed in the position.
+	WARNING: Notice that the output sequences have length 3n+2. Therefore, if the given peptides be in reading frames '+0' and '+1' then the last postion can get any nucleotide. In this case the N(3n+2) = 4*N(3n+1) where N is the total number of RNAs coding the peptides.
+
+	-n
+	Define an integer as the number of RNAs printed in the output.  
+
+	-c 
+	Define nucleotide constraints on the coding RNA sequences. It is possible to define IUPAC code nucleotide constraint of length <= 3n+2 for the given peptides of length n. If the constraint length is m < 3n+2 the program assumes all the nucleotides from m to 3n+2 can code for any nucleotide(IUPAC code 'N').   
+
+	-m 
+	If the RNA sequences are not required to code exactly the given peptides, it is possible to define a similarity matrix between the amino acids and use it as in input to the program. Blosum62 similarity matrix is included in the program in a file titled “blosum62.txt”. If it is used the output RNAs code peptides with blosum similarity greater or equal than 'threshold'(defined in -t flag) to the given peptides.
+
+	-t
+	Define an integer as the minimum threshold for the input similarity matrix. It must be used together with -m flag and guarantees the output RNAs code peptides with similarity greater or equal than 'threshold' to the given peptides.
+
+	-gc
+	Define a single integer value or an interval for GC-content percentage. The input can be a single value or a range of format gcl:gcu where gcl and gcu are inclusive lower bounds.
+
+	-w
+	use weighted sampling 
+
+	-pssm
+	Define a file name to save the output logo plot. The logo plot is with computed for RNA sequences satisfying all other input options.
+
+	-v
+	For verbose output. Use this option to print the total number of coding sequences satisfying the constraint and similarity.
+/*******************************************************************************************************************************************************
+

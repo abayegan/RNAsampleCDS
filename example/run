@@ -1,0 +1,8 @@
+#sample 20 nucleotides for the file peptide1 satisfying the constraints in constraint1
+../RNAsampleCDS.py -p peptide1 -c constraint1 -n 20
+
+#get the number of coding sequences and sample 10 sequences with GC-content of 50%
+../RNAsampleCDS.py -p peptide1 -gc 50 -n 10 -v
+
+#Saves the logoplot of all coding seuquences in example1.pdf 
+../RNAsampleCDS.py -p peptide1 -n 0 -pssm example1
