@@ -21,10 +21,10 @@ def printusage(exe):
 		Define nucleotide constraints on the coding RNA sequences. It is possible to define IUPAC code nucleotide constraint of length <= 3n+2 for the given peptides of length n. If the constraint length is m < 3n+2 the program assumes all the nucleotides from m to 3n+2 can code for any nucleotide(IUPAC code 'N').   
 	
 		-m 
-		If the RNA sequences are not required to code exactly the given peptides, it is possible to define a similarity matrix between the amino acids and use it as in input to the program. Blosum62 similarity matrix is included in the program in a file titled "blosum62.txt". If it is used the output RNAs code peptides with blosum similarity greater or equal than 'threshold'(defined in -t flag) to the given peptides.
+		If the RNA sequences are not required to code exactly the given peptides, it is possible to define a similarity matrix between the amino acids and use it as in input to the program. All substitution matrices useed by BLAST are included in the folder 'matrices' in the source code directory. If it is used the output RNAs code peptides with similarity greater or equal than 'threshold'(defined in -t flag) to the given peptides.
 		
 		-t
-		Define an integer as the minimum threshold for the input similarity matrix. It must be used together with -m flag and guarantees the output RNAs code peptides with similarity greater or equal than 'threshold' to the given peptides.
+		Define an integer as the minimum threshold for the input similarity matrix. It must be used together with -m flag and guarantees the output RNAs code peptides with similarity greater or equal than 'threshold' to the given peptides. Default is 1. 
 	
 		-gc
 		Define a single integer value or an interval for GC-content. The input can be a single value or a range of format gcl:gcu where gcl and gcu are inclusive lower bounds.
@@ -114,6 +114,8 @@ def nuc2int(nuc):
 def readBlosumMatrix(filename):
 	file = open(filename)
 	line = file.readline()
+	while line[0] == '#':
+		line = file.readline()
 	AAs  = ['$']+line.split()  #Add leading bogus symbol to ensure 1-indexed
 	#initialize dictionary
 	D    = {}
