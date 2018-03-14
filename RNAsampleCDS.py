@@ -578,7 +578,7 @@ def bfs(peptides,filename=None,threshold=1,constraint=None):
 	if(VERBOSE): print "#total number of sequences:",len(RNA)
 	return RNA
 
-def createPSSM(peptides,ZF,ZB,entfilename,filename=None,threshold=1):
+def createPSSM(peptides,ZF,ZB,filename=None,threshold=1):
 	# Function computes PSSM[(k,ch) = frequency of ch in position k of the
 	# multiple alignment of ALL sequences
 	#    s = a_{0}...a_{3n+2}  such that
@@ -624,33 +624,11 @@ def createPSSM(peptides,ZF,ZB,entfilename,filename=None,threshold=1):
 			PSSM[3*n,ch1] += ZF[(n,ch1,ch2)]
 			PSSM[3*n+1,ch2] += ZF[(n,ch1,ch2)]
 	#----------Normalize PSSM ---------------
-	#for i in range(3*n+2): #i in [0,...,3n+1]
-		#for ch in NUCL:
-			#PSSM[(i,ch)] = PSSM[(i,ch)]
-			
-	#---------compute and save sequence entropy at each position-----
-	if (entfilename!=None):
-		d = computePositionalEntropy(PSSM)
-		of = open(entfilename,'w')
-		for i in range(3*n+2):
-			of.write("%d\t%f\n"%(i,d[i]))
-		of.close()
+	for i in range(3*n+2): #i in [0,...,3n+1]
+		for ch in NUCL:
+			PSSM[(i,ch)] = PSSM[(i,ch)]
 	return PSSM
 
-def computePositionalEntropy(PSSM):
-	n = len(PSSM.keys())/4 #length of the sequences
-	m = PSSM[0,'A'] + PSSM[0,'C'] + PSSM[0,'G'] + PSSM[0,'U'] #number of sequences in the alignments
-	S={}
-	for i in range(n):
-		S[i]=0
-	for i in range(n):
-		for nuc in NUCL:
-			if (PSSM[i,nuc]!=0):
-				#print i,nuc,PSSM[(i,nuc)],PSSM[(i,nuc)]/m
-				S[i] -= (PSSM[(i,nuc)]/m) * log(PSSM[(i,nuc)]/m , 2)
-	for i in range(n):
-		S[i] = S[i]/log(len(NUCL),2)
-	return S
 
 def logoplot(PSSM,outname):
 # PSSM is a dictionary s.t PSSM[(pos,ch)]= frequency of nucleotide 'ch' at position 'pos' of the sequence.
@@ -670,7 +648,7 @@ def logoplot(PSSM,outname):
 	run.communicate()
 	os.remove('tmp')
 
-def main(peptides,numSamples,weighted,gclow,gcup,BFS,PSSMfilename,entfilename,filename=None,threshold=1,constraint=None):
+def main(peptides,numSamples,weighted,gclow,gcup,BFS,PSSMfilename,filename=None,threshold=1,constraint=None):
 	seqLen = len(peptides['+0'])
 	#convert GC-content to GC-count
 	gc1 = int((3*seqLen+2)*gclow/100)
@@ -686,7 +664,7 @@ def main(peptides,numSamples,weighted,gclow,gcup,BFS,PSSMfilename,entfilename,fi
 		if(PSSMfilename):
 			ZF      = computeZF(peptides,constraint,filename,threshold)
 			ZB = computeZB(peptides,constraint,filename,threshold)
-			pssm = createPSSM(peptides,ZF,ZB,entfilename,filename,threshold)
+			pssm = createPSSM(peptides,ZF,ZB,filename,threshold)
 			logoplot(pssm,PSSMfilename)
 			
 	else:
@@ -695,7 +673,7 @@ def main(peptides,numSamples,weighted,gclow,gcup,BFS,PSSMfilename,entfilename,fi
 			RNA    = sample(peptides,ZF,seqLen,numSamples,constraint,weighted,filename,threshold)				
 			if(PSSMfilename):
 				ZB = computeZB(peptides,constraint,filename,threshold)
-				pssm = createPSSM(peptides,ZF,ZB,entfilename,filename,threshold)
+				pssm = createPSSM(peptides,ZF,ZB,filename,threshold)
 				logoplot(pssm,PSSMfilename)
 		else:
 			if(VERBOSE): print "#GC-Content: %d-%d percent"%(gclow,gcup)
@@ -705,7 +683,7 @@ def main(peptides,numSamples,weighted,gclow,gcup,BFS,PSSMfilename,entfilename,fi
 				if(VERBOSE): print "#WARNING: GC-content is not used in creating PSSM."
 				ZF      = computeZF(peptides,constraint,filename,threshold)
 				ZB = computeZB(peptides,constraint,filename,threshold)
-				pssm = createPSSM(peptides,ZF,ZB,entfilename,filename,threshold)
+				pssm = createPSSM(peptides,ZF,ZB,filename,threshold)
 				logoplot(pssm,PSSMfilename)
 	#computeZB_GC(peptides,constraint)
 	printRNA(RNA)
@@ -780,7 +758,6 @@ if __name__ == '__main__':
 	BFS=0
 	threshold=1
 	PSSMfilename=None
-	entfilename=None
 	filename=None
 	constraintfile=None
 	peptidefile=None
@@ -887,16 +864,6 @@ if __name__ == '__main__':
 			VERBOSE = 1
 			del[args[i]]
 			break
-	#output sequence entropy at each position, with -ent flag
-	for i in range(len(args)):
-		if args[i]=='-ent':
-			if i+1!=len(args) and args[i+1][0]!='-':	
-				entfilename = args[i+1]
-				del[args[i+1]]; del[args[i]]
-				break
-			else:
-				print "ERROR: entropy file name must be specified after -ent flag!\n"
-				printusage(sys.argv[0])
 	#chack if -p is defined
 	if peptidefile==None:
 		print "ERROR: peptide file must be specidfied using -p flag!\n"
@@ -908,4 +875,4 @@ if __name__ == '__main__':
 		constraint = parseConstraintFile(constraintfile,n)
 	else:
 		constraint = None
-	main(peptideD,numSamples,weighted,gclow,gcup,BFS,PSSMfilename,entfilename,filename,threshold,constraint)
+	main(peptideD,numSamples,weighted,gclow,gcup,BFS,PSSMfilename,filename,threshold,constraint)

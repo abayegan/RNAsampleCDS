@@ -1,7 +1,0 @@
-The scripts in this folder just work for two overlapping peptides. RNAsampleCDS is a generalized version of these programs. 
-The only difference is the length of the final sequences:
-overcode-0.py: for peptides of length n outputs sequences of length 3*n coding two peptides in +0 and -0 reading frames.
-overcode+1.py: for peptides of length n outputs sequences of length 3*n+1 coding two peptides in +0 and +1 reading frames.
-overcode+2.py: for peptides of length n outputs sequences of length 3*n+2 coding two peptides in +0 and +2 reading frames.
-overcode-1.py: for peptides of length n outputs sequences of length 3*n+1 coding two peptides in +0 and -1 reading frames.
-overcode-2.py: for peptides of length n outputs sequences of length 3*n+2 coding two peptides in +0 and -2 reading frames.
